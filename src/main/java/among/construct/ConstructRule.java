@@ -12,9 +12,9 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
- * Special {@link Constructor}
+ * Special {@link Constructor} with name-based match to provide easy parsing for complex DSL.
  *
- * @param <T>
+ * @param <T> Type of the resulting object
  */
 public final class ConstructRule<T> implements Constructor<Among, T>{
 	public static <T> ConstructRule<T> make(Consumer<ConstructRuleBuilder<T>> consumer){
