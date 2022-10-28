@@ -1,0 +1,14 @@
+{
+  name: John Doe
+  description: My name is John.
+  height: 1.5
+  weight: 0.002
+  notes: [ Object class: keter ]
+}
+
+{
+  name: Jane Doe
+  description: My name is Jane.
+  height: 12345824376987857298435
+  weight: 0.00002
+}
