@@ -67,8 +67,8 @@ publishing {
             }
             pom {
                 name = 'construct'
-                description = 'A JSON-inspired data expression format'
-                // url = 'https://github.com/AmongLang/Among'
+                description = 'Object parser/factory abstraction layer for Among'
+                url = 'https://github.com/AmongLang/Construct'
 
                 licenses {
                     license {
@@ -84,9 +84,9 @@ publishing {
                     }
                 }
                 scm {
-                    // connection = 'scm:git:git:https://github.com/AmongLang/Among.git'
-                    // developerConnection = 'scm:git:ssh://github.com:AmongLang/Among.git'
-                    // url = 'https://github.com/AmongLang/Among'
+                    connection = 'scm:git:git:https://github.com/AmongLang/Construct.git'
+                    developerConnection = 'scm:git:ssh://github.com:AmongLang/Construct.git'
+                    url = 'https://github.com/AmongLang/Construct'
                 }
             }
         }
