@@ -14,7 +14,18 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Base interface for object construction.
+ * Base interface for object construction.<br>
+ * Constructors transform one parameter object to another. Although constructors are designed to encapsulate parsing
+ * {@link Among} objects to various objects, constructors are applicable to all type of inputs.<br>
+ * Constructors expect successful parsing result to be nonnull. If {@code null} is returned, the action is considered
+ * as failure or aborted.<br>
+ * Constructors are often used with report handler attached to collect any errors that may occur. Using provided report
+ * handler is strongly recommended, rather than using external debugging interface, for example console logging. No
+ * report handler being passed means this action is silent. If any error occurs, the action should return {@code
+ * null} without passing error information.<br>
+ * Exception should not be thrown except for the case of parameter being {@code null}. Any constructors that may
+ * produce exception should be handled appropriately before use, with methods like {@link
+ * Constructor#tryConstruct(Constructor, ErrorReporter)}.
  *
  * @param <A> Type of Among value parameter
  * @param <T> Type of the resulting object
@@ -23,7 +34,9 @@ import java.util.Objects;
 public interface Constructor<A extends Among, T>{
 	/**
 	 * Construct an object using {@code instance} as parameter. If it fails, {@code null} is returned. An appropriate
-	 * message will be logged to {@code reportHandler} if it's supplied.
+	 * message will be logged to {@code reportHandler} if it's supplied.<br>
+	 * No report handler being passed means this action is silent. If any error occurs, the action should return {@code
+	 * null} without passing error information.
 	 *
 	 * @param instance      Parameter value
 	 * @param reportHandler Optional report handler

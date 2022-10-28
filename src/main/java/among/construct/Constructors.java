@@ -67,8 +67,8 @@ public final class Constructors{
 	};
 
 	/**
-	 * One-to-one recreation of {@code eval} default library. Evaluated object is converted back to {@link Among}
-	 * object, as original library does.
+	 * Among default {@code eval} library recreated using constructors. Evaluated object is converted back to {@link
+	 * Among} object, as original library does.
 	 */
 	public static final ConstructRule<Among> EVAL = ConstructRule.make(builder ->
 			builder.list("||", listCondition(c -> c.minSize(2), (instance, reportHandler) -> binaryBool(instance, reportHandler, BinaryBoolOp.OR_SS)))

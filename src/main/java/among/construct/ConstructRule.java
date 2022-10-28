@@ -12,11 +12,23 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
- * Special {@link Constructor} with name-based match to provide easy parsing for complex DSL.
+ * Special {@link Constructor} with name-based match to provide easy parsing for complex {@link Among} DSL.<br>
+ * Construct rule manages multiple possible choice of constructors with type and name(value for primitive) of the
+ * parameter.<br>
+ * Construct rules are beneficial when there is multiple possible input and output cases, like code expressions. If
+ * there is only one schema applicable at the context, using plain {@link Constructor} or {@link
+ * ConditionedConstructor} might be simpler.
  *
  * @param <T> Type of the resulting object
  */
 public final class ConstructRule<T> implements Constructor<Among, T>{
+	/**
+	 * Make a construct rule.
+	 *
+	 * @param consumer Builder consumer
+	 * @param <T>      Output type
+	 * @return Newly created construct rule
+	 */
 	public static <T> ConstructRule<T> make(Consumer<ConstructRuleBuilder<T>> consumer){
 		ConstructRuleBuilder<T> b = new ConstructRuleBuilder<>(null);
 		consumer.accept(b);
@@ -83,6 +95,13 @@ public final class ConstructRule<T> implements Constructor<Among, T>{
 		return null;
 	}
 
+	/**
+	 * Make a construct rule based on this rule. {@code this} will become fallback rule for the new rule; if new rule
+	 * cannot find appropriate constructor to apply, {@code this} will be queried.
+	 *
+	 * @param consumer Builder consumer
+	 * @return Newly created construct rule
+	 */
 	public ConstructRule<T> extend(Consumer<ConstructRuleBuilder<T>> consumer){
 		ConstructRuleBuilder<T> b = new ConstructRuleBuilder<>(this);
 		consumer.accept(b);
