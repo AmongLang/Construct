@@ -16,40 +16,75 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+/**
+ * An implementation for {@link Constructor} to check for simple conditions of {@link AmongList} or {@link AmongObject}
+ * before calling the actual constructor. Each constructor is paired with {@link Condition}, which checks given object
+ * and reports error. This class can be used with only one condition, or multiple conditions.<br>
+ * If multiple conditions were supplied, it expects only one of them to match at a time. If multiple conditions match
+ * given parameter, it is reported as an error. This behavior can be changed with {@link
+ * ConditionedConstructorBuilder#useFirstMatch()}, which makes the constructor to apply the first match found.
+ *
+ * @param <A> Type of Among value parameter
+ * @param <T> Type of the resulting object
+ */
 public final class ConditionedConstructor<A extends Among, T> implements Constructor<A, T>{
+	/**
+	 * Make conditioned constructor for {@link AmongList}s.
+	 *
+	 * @param consumer Builder consumer
+	 * @param <T>      Type of the resulting object
+	 * @return Newly created constructor instance
+	 */
 	public static <T> ConditionedConstructor<AmongList, T> listConditions(Consumer<ListConstructorBuilder<T>> consumer){
 		ListConstructorBuilder<T> b = new ListConstructorBuilder<>();
 		consumer.accept(b);
 		return b.build();
 	}
-
+	/**
+	 * Make conditioned constructor for {@link AmongObject}s.
+	 *
+	 * @param consumer Builder consumer
+	 * @param <T>      Type of the resulting object
+	 * @return Newly created constructor instance
+	 */
 	public static <T> ConditionedConstructor<AmongObject, T> objectConditions(Consumer<ObjectConstructorBuilder<T>> consumer){
 		ObjectConstructorBuilder<T> b = new ObjectConstructorBuilder<>();
 		consumer.accept(b);
 		return b.build();
 	}
-
+	/**
+	 * Make conditioned constructor for {@link AmongList}s. The constructor will have only one condition.
+	 *
+	 * @param consumer Builder consumer
+	 * @param <T>      Type of the resulting object
+	 * @return Newly created constructor instance
+	 */
 	public static <T> ConditionedConstructor<AmongList, T> listCondition(Consumer<ListConditionBuilder> consumer, Constructor<AmongList, T> constructor){
 		return new ListConstructorBuilder<T>().add(consumer, constructor).build();
 	}
-
+	/**
+	 * Make conditioned constructor for {@link AmongObject}s. The constructor will have only one condition.
+	 *
+	 * @param consumer Builder consumer
+	 * @param <T>      Type of the resulting object
+	 * @return Newly created constructor instance
+	 */
 	public static <T> ConditionedConstructor<AmongObject, T> objectCondition(Consumer<ObjectConditionBuilder> consumer, Constructor<AmongObject, T> constructor){
 		return new ObjectConstructorBuilder<T>().add(consumer, constructor).build();
 	}
 
 	private final Condition<A>[] conditions;
 	private final Constructor<A, T>[] constructors;
-	private final OperationMode mode;
+	private final boolean firstMatch;
 
-	@SuppressWarnings("unchecked")
-	public ConditionedConstructor(List<Condition<A>> conditions, List<Constructor<A, T>> constructors, OperationMode mode){
+	@SuppressWarnings("unchecked") ConditionedConstructor(List<Condition<A>> conditions, List<Constructor<A, T>> constructors, boolean firstMatch){
 		this.conditions = conditions.toArray(new Condition[0]);
 		this.constructors = constructors.toArray(new Constructor[0]);
 		if(this.conditions.length!=this.constructors.length)
 			throw new IllegalArgumentException("conditions.size() != constructors.size()");
 		for(Condition<A> c : this.conditions) Objects.requireNonNull(c);
 		for(Constructor<A, T> c : this.constructors) Objects.requireNonNull(c);
-		this.mode = Objects.requireNonNull(mode);
+		this.firstMatch = firstMatch;
 	}
 
 	@Override @Nullable public T construct(A instance, @Nullable ReportHandler reportHandler){
@@ -65,7 +100,7 @@ public final class ConditionedConstructor<A extends Among, T> implements Constru
 						constructors[0].construct(instance, reportHandler) :
 						null;
 		}
-		if(mode==OperationMode.FIRST_MATCH){
+		if(firstMatch){
 			for(int i = 0; i<conditions.length; i++)
 				if(conditions[i].test(instance))
 					return constructors[i].construct(instance, reportHandler);
@@ -102,10 +137,5 @@ public final class ConditionedConstructor<A extends Among, T> implements Constru
 			reportHandler.reportError(stb.toString());
 		}
 		return null;
-	}
-
-	public enum OperationMode{
-		FIRST_MATCH,
-		ONLY_MATCH
 	}
 }
