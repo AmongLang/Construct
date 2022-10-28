@@ -53,8 +53,8 @@ public interface Constructor<IN, OUT>{
 	 * @param reportHandler Optional report handler
 	 * @return Constructed object
 	 * @throws NullPointerException If {@code instance == null}
-	 * @throws Sussy                If constructing via {@link Constructor#construct(IN, ReportHandler)} fails
-	 * @see Constructor#construct(IN, ReportHandler)
+	 * @throws Sussy                If constructing via {@link Constructor#construct(Object, ReportHandler)} fails
+	 * @see Constructor#construct(Object, ReportHandler)
 	 */
 	default OUT constructExpect(IN instance, @Nullable ReportHandler reportHandler){
 		OUT OUT = construct(instance, reportHandler);
