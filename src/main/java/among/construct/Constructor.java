@@ -25,7 +25,7 @@ import java.util.Objects;
  * null} without passing error information.<br>
  * Exception should not be thrown except for the case of parameter being {@code null}. Any constructors that may
  * produce exception should be handled appropriately before use, with methods like {@link
- * Constructor#tryConstruct(Constructor, ErrorReporter)}.
+ * Constructor#tryConstruct(Constructor, ExceptionReporter)}.
  *
  * @param <A> Type of Among value parameter
  * @param <T> Type of the resulting object
@@ -88,7 +88,7 @@ public interface Constructor<A extends Among, T>{
 	 * @return Wrapped constructor
 	 * @throws NullPointerException If {@code delegate == null}
 	 * @see Constructor#tryConstruct(Constructor, String, boolean)
-	 * @see Constructor#tryConstruct(Constructor, ErrorReporter)
+	 * @see Constructor#tryConstruct(Constructor, ExceptionReporter)
 	 */
 	static <A extends Among, T> Constructor<A, T> tryConstruct(Constructor<? super A, T> delegate){
 		return tryConstruct(delegate, "Cannot construct object due to an unexpected exception", true);
@@ -104,30 +104,30 @@ public interface Constructor<A extends Among, T>{
 	 * @param <T>          Type of the resulting object
 	 * @return Wrapped constructor
 	 * @throws NullPointerException If {@code constructor == null}
-	 * @see Constructor#tryConstruct(Constructor, ErrorReporter)
+	 * @see Constructor#tryConstruct(Constructor, ExceptionReporter)
 	 */
 	static <A extends Among, T> Constructor<A, T> tryConstruct(Constructor<? super A, T> constructor, String errorMessage, boolean logException){
 		return tryConstruct(constructor, (reportHandler, inst, e) -> reportHandler.report(ReportType.ERROR, errorMessage, inst.sourcePosition(), logException ? e : null));
 	}
 	/**
 	 * Wraps given constructor inside try-catch block. Any RuntimeExceptions thrown will be caught and logged with
-	 * {@link ErrorReporter}.<br>
+	 * {@link ExceptionReporter}.<br>
 	 *
-	 * @param constructor      The constructor that might throw an exception
-	 * @param exceptionHandler An exception handler
-	 * @param <A>              Type of Among value parameter
-	 * @param <T>              Type of the resulting object
+	 * @param constructor       The constructor that might throw an exception
+	 * @param exceptionReporter Optional exception reporter
+	 * @param <A>               Type of Among value parameter
+	 * @param <T>               Type of the resulting object
 	 * @return Wrapped constructor
 	 * @throws NullPointerException If {@code constructor == null}
 	 */
-	static <A extends Among, T> Constructor<A, T> tryConstruct(Constructor<? super A, T> constructor, @Nullable ErrorReporter<? super A> exceptionHandler){
+	static <A extends Among, T> Constructor<A, T> tryConstruct(Constructor<? super A, T> constructor, @Nullable ExceptionReporter<? super A> exceptionReporter){
 		Objects.requireNonNull(constructor);
 		return (instance, reportHandler) -> {
 			try{
 				return constructor.construct(instance, reportHandler);
 			}catch(RuntimeException ex){
-				if(reportHandler!=null&&exceptionHandler!=null)
-					exceptionHandler.reportError(reportHandler, instance, ex);
+				if(reportHandler!=null&&exceptionReporter!=null)
+					exceptionReporter.reportException(reportHandler, instance, ex);
 				return null;
 			}
 		};
@@ -214,12 +214,12 @@ public interface Constructor<A extends Among, T>{
 	}
 
 	/**
-	 * Error reporter for {@link Constructor#tryConstruct(Constructor, ErrorReporter)}.
+	 * Exception reporter for {@link Constructor#tryConstruct(Constructor, ExceptionReporter)}.
 	 *
 	 * @param <A> Type of Among value parameter
 	 */
 	@FunctionalInterface
-	interface ErrorReporter<A extends Among>{
-		void reportError(ReportHandler reportHandler, A instance, Throwable exception);
+	interface ExceptionReporter<A extends Among>{
+		void reportException(ReportHandler reportHandler, A instance, Throwable exception);
 	}
 }
