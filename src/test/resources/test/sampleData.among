@@ -12,3 +12,16 @@
   height: 12345824376987857298435
   weight: 0.00002
 }
+
+// below this things should explode
+
+{
+  name: my name is not important to you.....
+}
+
+{
+  name: asdf
+  description: asdf
+  height: asdf
+  weight: asdf
+}

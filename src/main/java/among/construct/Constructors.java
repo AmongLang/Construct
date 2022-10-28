@@ -6,6 +6,9 @@ import among.obj.AmongList;
 import among.obj.AmongPrimitive;
 import org.jetbrains.annotations.Nullable;
 
+import static among.construct.ConditionedConstructor.listCondition;
+import static among.construct.ConditionedConstructor.listConditions;
+
 /**
  * Default set of constructors.
  */
@@ -68,33 +71,36 @@ public final class Constructors{
 	 * object, as original library does.
 	 */
 	public static final ConstructRule<Among> EVAL = ConstructRule.make(builder ->
-			builder.list("||").minSize(2).add((instance, reportHandler) -> binaryBool(instance, reportHandler, BinaryBoolOp.OR_SS))
-					.finish().list("&&").minSize(2).add((instance, reportHandler) -> binaryBool(instance, reportHandler, BinaryBoolOp.AND_SS))
-					.finish().list("|").minSize(2).add((instance, reportHandler) -> binaryBool(instance, reportHandler, BinaryBoolOp.OR))
-					.finish().list("&").minSize(2).add((instance, reportHandler) -> binaryBool(instance, reportHandler, BinaryBoolOp.AND))
-					.finish().list("==").alias("=").minSize(2).add((instance, reportHandler) -> eq(instance, reportHandler, true))
-					.finish().list("!=").minSize(2).add((instance, reportHandler) -> eq(instance, reportHandler, false))
-					.finish().list(">").minSize(2).add((instance, reportHandler) -> binary(instance, reportHandler, BinaryNumOp.GT))
-					.finish().list("<").minSize(2).add((instance, reportHandler) -> binary(instance, reportHandler, BinaryNumOp.LT))
-					.finish().list(">=").minSize(2).add((instance, reportHandler) -> binary(instance, reportHandler, BinaryNumOp.GTEQ))
-					.finish().list("<=").minSize(2).add((instance, reportHandler) -> binary(instance, reportHandler, BinaryNumOp.LTEQ))
-					.finish().list("+").minSize(2).add((instance, reportHandler) -> binary(instance, reportHandler, BinaryNumOp.ADD))
-					.size(1).add((instance, reportHandler) -> {
-						Double num = EVAL_NUM.construct(instance.get(0), reportHandler);
-						return num==null ? null : Among.value(num);
-					})
-					.finish().list("-").minSize(2).add((instance, reportHandler) -> binary(instance, reportHandler, BinaryNumOp.SUB))
-					.size(1).add((instance, reportHandler) -> {
-						Double num = EVAL_NUM.construct(instance.get(0), reportHandler);
-						return num==null ? null : Among.value(-num);
-					})
-					.finish().list("*").minSize(2).add((instance, reportHandler) -> binary(instance, reportHandler, BinaryNumOp.MUL))
-					.finish().list("/").minSize(2).add((instance, reportHandler) -> binary(instance, reportHandler, BinaryNumOp.DIV))
-					.finish().list("^").alias("**").minSize(2).add((instance, reportHandler) -> binary(instance, reportHandler, BinaryNumOp.POW))
-					.finish().list("!").size(1).add((instance, reportHandler) -> {
+			builder.list("||", listCondition(c -> c.minSize(2), (instance, reportHandler) -> binaryBool(instance, reportHandler, BinaryBoolOp.OR_SS)))
+					.list("&&", listCondition(c -> c.minSize(2), (instance, reportHandler) -> binaryBool(instance, reportHandler, BinaryBoolOp.AND_SS)))
+					.list("|", listCondition(c -> c.minSize(2), (instance, reportHandler) -> binaryBool(instance, reportHandler, BinaryBoolOp.OR)))
+					.list("&", listCondition(c -> c.minSize(2), (instance, reportHandler) -> binaryBool(instance, reportHandler, BinaryBoolOp.AND)))
+					.list(new String[]{"==", "="}, listCondition(c -> c.minSize(2), (instance, reportHandler) -> eq(instance, reportHandler, true)))
+					.list("!=", listCondition(c -> c.minSize(2), (instance, reportHandler) -> eq(instance, reportHandler, false)))
+					.list(">", listCondition(c -> c.minSize(2), (instance, reportHandler) -> binary(instance, reportHandler, BinaryNumOp.GT)))
+					.list("<", listCondition(c -> c.minSize(2), (instance, reportHandler) -> binary(instance, reportHandler, BinaryNumOp.LT)))
+					.list(">=", listCondition(c -> c.minSize(2), (instance, reportHandler) -> binary(instance, reportHandler, BinaryNumOp.GTEQ)))
+					.list("<=", listCondition(c -> c.minSize(2), (instance, reportHandler) -> binary(instance, reportHandler, BinaryNumOp.LTEQ)))
+					.list("+", listConditions(b2 -> b2
+							.add(c -> c.minSize(2), (instance, reportHandler) -> binary(instance, reportHandler, BinaryNumOp.ADD))
+							.add(c -> c.size(1), (instance, reportHandler) -> {
+								Double num = EVAL_NUM.construct(instance.get(0), reportHandler);
+								return num==null ? null : Among.value(num);
+							})))
+					.list("-", listConditions(b2 -> b2
+							.add(c -> c.minSize(2), (instance, reportHandler) -> binary(instance, reportHandler, BinaryNumOp.SUB))
+							.add(c -> c.size(1), (instance, reportHandler) -> {
+								Double num = EVAL_NUM.construct(instance.get(0), reportHandler);
+								return num==null ? null : Among.value(-num);
+							})))
+					.list("*", listCondition(c -> c.minSize(2), (instance, reportHandler) -> binary(instance, reportHandler, BinaryNumOp.MUL)))
+					.list("/", listCondition(c -> c.minSize(2), (instance, reportHandler) -> binary(instance, reportHandler, BinaryNumOp.DIV)))
+					.list(new String[]{"^", "**"}, listCondition(c -> c.minSize(2), (instance, reportHandler) -> binary(instance, reportHandler, BinaryNumOp.POW)))
+					.list("!", listCondition(c -> c.minSize(1), (instance, reportHandler) -> {
 						Boolean bool = EVAL_BOOL.construct(instance.get(0), reportHandler);
 						return bool==null ? null : Among.value(!bool);
-					}).finish().all((instance, reportHandler) -> instance)
+					}))
+					.all(IDENTITY)
 	);
 
 	private enum BinaryBoolOp{AND, OR, AND_SS, OR_SS}

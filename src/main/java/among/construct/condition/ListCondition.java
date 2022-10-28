@@ -18,7 +18,7 @@ public final class ListCondition extends Condition<AmongList>{
 	}
 
 	@Override public boolean test(AmongList list){
-		if(!checkSize(list.size(), null)) return false;
+		if(!checkSize(list, list.size(), null)) return false;
 		for(int i = 0; i<list.size(); i++){
 			byte type;
 			if(elementIndexToType!=null&&elementIndexToType.containsKey(i)) type = elementIndexToType.get(i);
@@ -31,7 +31,7 @@ public final class ListCondition extends Condition<AmongList>{
 
 	@Override public boolean test(AmongList list, @Nullable ReportHandler reportHandler){
 		if(reportHandler==null) return test(list);
-		if(!checkSize(list.size(), reportHandler)) return false;
+		if(!checkSize(list, list.size(), reportHandler)) return false;
 		boolean invalid = false;
 		for(int i = 0; i<list.size(); i++){
 			byte type;

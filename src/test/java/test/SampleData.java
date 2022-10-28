@@ -1,9 +1,10 @@
 package test;
 
 import among.TypeFlags;
-import among.construct.ConstructRule;
+import among.construct.ConditionedConstructor;
 import among.construct.Constructor;
 import among.construct.Constructors;
+import among.obj.Among;
 
 import java.util.Collections;
 import java.util.List;
@@ -33,24 +34,26 @@ public final class SampleData{
 				'}';
 	}
 
-	public static final ConstructRule<SampleData> RULE = ConstructRule.make(b -> b.obj()
-			.property("name", TypeFlags.PRIMITIVE)
-			.property("description", TypeFlags.PRIMITIVE)
-			.property("height", TypeFlags.PRIMITIVE)
-			.property("weight", TypeFlags.PRIMITIVE)
-			.optionalProperty("notes", TypeFlags.LIST)
-			.add((instance, reportHandler) -> {
-				Double height = Constructors.DOUBLE.construct(instance.expectProperty("height"), reportHandler);
-				if(height==null) return null;
-				Double weight = Constructors.DOUBLE.construct(instance.expectProperty("weight"), reportHandler);
-				if(weight==null) return null;
-				List<String> notes = instance.hasProperty("notes") ?
-						Constructor.listOf(Constructors.VALUE)
-								.construct(instance.expectProperty("notes").asList(), reportHandler) :
-						Collections.emptyList();
-				return new SampleData(
-						instance.expectProperty("name").asPrimitive().getValue(),
-						instance.expectProperty("description").asPrimitive().getValue(),
-						height, weight, notes);
-			}));
+	public static final Constructor<Among, SampleData> RULE = Constructor.generifyObject(
+			ConditionedConstructor.objectCondition(c -> c
+							.property("name", TypeFlags.PRIMITIVE)
+							.property("description", TypeFlags.PRIMITIVE)
+							.property("height", TypeFlags.PRIMITIVE)
+							.property("weight", TypeFlags.PRIMITIVE)
+							.optionalProperty("notes", TypeFlags.LIST),
+					(instance, reportHandler) -> {
+						Double height = Constructors.DOUBLE.construct(instance.expectProperty("height"), reportHandler);
+						if(height==null) return null;
+						Double weight = Constructors.DOUBLE.construct(instance.expectProperty("weight"), reportHandler);
+						if(weight==null) return null;
+						List<String> notes = instance.hasProperty("notes") ?
+								Constructor.listOf(Constructors.VALUE)
+										.construct(instance.expectProperty("notes").asList(), reportHandler) :
+								Collections.emptyList();
+						if(notes==null) return null;
+						return new SampleData(
+								instance.expectProperty("name").asPrimitive().getValue(),
+								instance.expectProperty("description").asPrimitive().getValue(),
+								height, weight, notes);
+					}));
 }

@@ -28,11 +28,11 @@ public final class ConstructRule<T> implements Constructor<Among, T>{
 	@Nullable private final Map<String, Supplier<T>> primitiveRules;
 	@Nullable private final Constructor<AmongPrimitive, T> genericPrimitiveRule;
 
-	@Nullable private final Map<String, ConditionedConstructor<AmongList, T>> listRules;
-	@Nullable private final ConditionedConstructor<AmongList, T> genericListRule;
+	@Nullable private final Map<String, Constructor<AmongList, T>> listRules;
+	@Nullable private final Constructor<AmongList, T> genericListRule;
 
-	@Nullable private final Map<String, ConditionedConstructor<AmongObject, T>> objectRules;
-	@Nullable private final ConditionedConstructor<AmongObject, T> genericObjectRule;
+	@Nullable private final Map<String, Constructor<AmongObject, T>> objectRules;
+	@Nullable private final Constructor<AmongObject, T> genericObjectRule;
 
 	@Nullable private final Constructor<Among, T> genericValueRule;
 
@@ -42,10 +42,10 @@ public final class ConstructRule<T> implements Constructor<Among, T>{
 			@Nullable ConstructRule<? extends T> baseRule,
 			@Nullable Map<String, Supplier<T>> primitiveRules,
 			@Nullable Constructor<AmongPrimitive, T> genericPrimitiveRule,
-			@Nullable Map<String, ConditionedConstructor<AmongList, T>> listRules,
-			@Nullable ConditionedConstructor<AmongList, T> genericListRule,
-			@Nullable Map<String, ConditionedConstructor<AmongObject, T>> objectRules,
-			@Nullable ConditionedConstructor<AmongObject, T> genericObjectRule,
+			@Nullable Map<String, Constructor<AmongList, T>> listRules,
+			@Nullable Constructor<AmongList, T> genericListRule,
+			@Nullable Map<String, Constructor<AmongObject, T>> objectRules,
+			@Nullable Constructor<AmongObject, T> genericObjectRule,
 			@Nullable Constructor<Among, T> genericValueRule,
 			@Nullable String errorMessage){
 		this.baseRule = baseRule;
@@ -66,11 +66,11 @@ public final class ConstructRule<T> implements Constructor<Among, T>{
 			Constructor<AmongPrimitive, ? extends T> c = searchGenericPrimitiveRule();
 			if(c!=null) return c.construct(instance.asPrimitive(), reportHandler);
 		}else if(instance.isList()){
-			ConditionedConstructor<AmongList, ? extends T> c = searchListRule(instance.asList());
+			Constructor<AmongList, ? extends T> c = searchListRule(instance.asList());
 			if(c==null) c = searchGenericListRule();
 			if(c!=null) return c.construct(instance.asList(), reportHandler);
 		}else{ // object
-			ConditionedConstructor<AmongObject, ? extends T> c = searchObjRule(instance.asObj());
+			Constructor<AmongObject, ? extends T> c = searchObjRule(instance.asObj());
 			if(c==null) c = searchGenericObjRule();
 			if(c!=null) return c.construct(instance.asObj(), reportHandler);
 		}
@@ -97,17 +97,17 @@ public final class ConstructRule<T> implements Constructor<Among, T>{
 		return baseRule!=null ? baseRule.searchPrimitiveRule(value) : null;
 	}
 
-	@Nullable private ConditionedConstructor<AmongList, ? extends T> searchListRule(AmongList list){
+	@Nullable private Constructor<AmongList, ? extends T> searchListRule(AmongList list){
 		if(listRules!=null){
-			ConditionedConstructor<AmongList, T> c = listRules.get(list.getName());
+			Constructor<AmongList, T> c = listRules.get(list.getName());
 			if(c!=null) return c;
 		}
 		return baseRule!=null ? baseRule.searchListRule(list) : null;
 	}
 
-	@Nullable private ConditionedConstructor<AmongObject, ? extends T> searchObjRule(AmongObject obj){
+	@Nullable private Constructor<AmongObject, ? extends T> searchObjRule(AmongObject obj){
 		if(objectRules!=null){
-			ConditionedConstructor<AmongObject, T> c = objectRules.get(obj.getName());
+			Constructor<AmongObject, T> c = objectRules.get(obj.getName());
 			if(c!=null) return c;
 		}
 		return baseRule!=null ? baseRule.searchObjRule(obj) : null;
@@ -117,11 +117,11 @@ public final class ConstructRule<T> implements Constructor<Among, T>{
 		return genericPrimitiveRule!=null ? genericPrimitiveRule :
 				baseRule!=null ? baseRule.searchGenericPrimitiveRule() : null;
 	}
-	@Nullable private ConditionedConstructor<AmongList, ? extends T> searchGenericListRule(){
+	@Nullable private Constructor<AmongList, ? extends T> searchGenericListRule(){
 		return genericListRule!=null ? genericListRule :
 				baseRule!=null ? baseRule.searchGenericListRule() : null;
 	}
-	@Nullable private ConditionedConstructor<AmongObject, ? extends T> searchGenericObjRule(){
+	@Nullable private Constructor<AmongObject, ? extends T> searchGenericObjRule(){
 		return genericObjectRule!=null ? genericObjectRule :
 				baseRule!=null ? baseRule.searchGenericObjRule() : null;
 	}

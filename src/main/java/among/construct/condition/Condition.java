@@ -24,14 +24,14 @@ public abstract class Condition<A extends Among> implements Predicate<A>{
 
 	public abstract boolean test(A instance, @Nullable ReportHandler reportHandler);
 
-	protected boolean checkSize(int size, @Nullable ReportHandler reportHandler){
+	protected boolean checkSize(A instance, int size, @Nullable ReportHandler reportHandler){
 		if(isInRange(minSize, maxSize, size)) return true;
 		if(reportHandler!=null){
 			StringBuilder stb = new StringBuilder();
 			stb.append("Wrong size");
 			if(minSize>=0) stb.append(", min: ").append(minSize);
 			if(maxSize>=0) stb.append(", max: ").append(maxSize);
-			reportHandler.reportError(stb.append(" (provided ").append(size).append(")").toString());
+			reportHandler.reportError(stb.append(" (provided ").append(size).append(")").toString(), instance.sourcePosition());
 		}
 		return false;
 	}

@@ -66,7 +66,12 @@ public class SampleCode{
 
 
 	@Test public void sampleData() throws IOException{
-		RootAndDefinition rad = TestUtil.make(TestUtil.expectSourceFrom("test", "sampleData"));
+		Source src = TestUtil.expectSourceFrom("test", "sampleData");
+		RootAndDefinition rad = TestUtil.make(src);
+		ReportHandler reportHandler = (type, message, srcIndex, ex, hints) -> {
+			Report r = new Report(type, message, srcIndex, ex, hints);
+			r.print(src, type==ReportType.ERROR ? System.err::println : System.out::println);
+		};
 		for(Among among : rad.root().values()){
 			SampleData data = SampleData.RULE.construct(among, reportHandler);
 			if(data!=null) System.out.println(data);

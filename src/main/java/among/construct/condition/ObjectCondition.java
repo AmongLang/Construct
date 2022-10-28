@@ -19,7 +19,7 @@ public final class ObjectCondition extends Condition<AmongObject>{
 	}
 
 	@Override public boolean test(AmongObject obj){
-		if(!checkSize(obj.size(), null)) return false;
+		if(!checkSize(obj, obj.size(), null)) return false;
 		if(expectedPropertyToType!=null){
 			for(Map.Entry<String, PropertyCheck> e : expectedPropertyToType.entrySet()){
 				Among property = obj.getProperty(e.getKey());
@@ -38,14 +38,14 @@ public final class ObjectCondition extends Condition<AmongObject>{
 
 	@Override public boolean test(AmongObject obj, @Nullable ReportHandler reportHandler){
 		if(reportHandler==null) return test(obj);
-		if(!checkSize(obj.size(), reportHandler)) return false;
+		if(!checkSize(obj, obj.size(), reportHandler)) return false;
 		boolean invalid = false;
 		if(expectedPropertyToType!=null){
 			for(Map.Entry<String, PropertyCheck> e : expectedPropertyToType.entrySet()){
 				Among property = obj.getProperty(e.getKey());
 				if(property==null){
 					if(e.getValue().expected){
-						reportHandler.reportError("Missing property '"+e.getKey()+"'");
+						reportHandler.reportError("Missing property '"+e.getKey()+"'", obj.sourcePosition());
 						invalid = true;
 					}
 				}else if(!TypeFlags.matches(e.getValue().type, property)){
