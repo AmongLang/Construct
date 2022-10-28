@@ -27,11 +27,11 @@ import java.util.Objects;
  * produce exception should be handled appropriately before use, with methods like {@link
  * Constructor#tryConstruct(Constructor, ExceptionReporter)}.
  *
- * @param <A> Type of Among value parameter
- * @param <T> Type of the resulting object
+ * @param <IN>  Type of the parameter object
+ * @param <OUT> Type of the resulting object
  */
 @FunctionalInterface
-public interface Constructor<A extends Among, T>{
+public interface Constructor<IN, OUT>{
 	/**
 	 * Construct an object using {@code instance} as parameter. If it fails, {@code null} is returned. An appropriate
 	 * message will be logged to {@code reportHandler} if it's supplied.<br>
@@ -43,7 +43,7 @@ public interface Constructor<A extends Among, T>{
 	 * @return Constructed object, or {@code null} if it failed
 	 * @throws NullPointerException If {@code instance == null}
 	 */
-	@Nullable T construct(A instance, @Nullable ReportHandler reportHandler);
+	@Nullable OUT construct(IN instance, @Nullable ReportHandler reportHandler);
 
 	/**
 	 * Construct an object {@code instance} as parameter. If it fails, or if {@code null} is constructed, an exception
@@ -53,13 +53,13 @@ public interface Constructor<A extends Among, T>{
 	 * @param reportHandler Optional report handler
 	 * @return Constructed object
 	 * @throws NullPointerException If {@code instance == null}
-	 * @throws Sussy                If constructing via {@link Constructor#construct(Among, ReportHandler)} fails
-	 * @see Constructor#construct(Among, ReportHandler)
+	 * @throws Sussy                If constructing via {@link Constructor#construct(IN, ReportHandler)} fails
+	 * @see Constructor#construct(IN, ReportHandler)
 	 */
-	default T constructExpect(A instance, @Nullable ReportHandler reportHandler){
-		T t = construct(instance, reportHandler);
-		if(t==null) throw new Sussy("Construct failed");
-		return t;
+	default OUT constructExpect(IN instance, @Nullable ReportHandler reportHandler){
+		OUT OUT = construct(instance, reportHandler);
+		if(OUT==null) throw new Sussy("Construct failed");
+		return OUT;
 	}
 
 	/**
@@ -73,9 +73,24 @@ public interface Constructor<A extends Among, T>{
 	 * @return Constructed object, or {@code fallback} if it failed
 	 * @throws NullPointerException If {@code instance == null}
 	 */
-	default T constructOr(A instance, T fallback, @Nullable ReportHandler reportHandler){
-		T t = construct(instance, reportHandler);
-		return t!=null ? t : fallback;
+	default OUT constructOr(IN instance, OUT fallback, @Nullable ReportHandler reportHandler){
+		OUT OUT = construct(instance, reportHandler);
+		return OUT!=null ? OUT : fallback;
+	}
+
+	/**
+	 * Appends given constructor after this constructor. Returned constructor calls {@code this} and {@code other}
+	 * sequentially.
+	 *
+	 * @param other The constructor to append
+	 * @param <R>   Type of the new resulting object
+	 * @return New constructor
+	 */
+	default <R> Constructor<IN, R> then(Constructor<OUT, R> other){
+		return (instance, reportHandler) -> {
+			OUT out = this.construct(instance, reportHandler);
+			return out==null ? null : other.construct(out, reportHandler);
+		};
 	}
 
 	/**
@@ -83,14 +98,14 @@ public interface Constructor<A extends Among, T>{
 	 * generic error message.<br>
 	 *
 	 * @param delegate The constructor that might throw an exception
-	 * @param <A>      Type of Among value parameter
-	 * @param <T>      Type of the resulting object
+	 * @param <IN>     Type of the parameter object
+	 * @param <OUT>    Type of the resulting object
 	 * @return Wrapped constructor
 	 * @throws NullPointerException If {@code delegate == null}
 	 * @see Constructor#tryConstruct(Constructor, String, boolean)
 	 * @see Constructor#tryConstruct(Constructor, ExceptionReporter)
 	 */
-	static <A extends Among, T> Constructor<A, T> tryConstruct(Constructor<? super A, T> delegate){
+	static <IN, OUT> Constructor<IN, OUT> tryConstruct(Constructor<? super IN, OUT> delegate){
 		return tryConstruct(delegate, "Cannot construct object due to an unexpected exception", true);
 	}
 	/**
@@ -100,14 +115,15 @@ public interface Constructor<A extends Among, T>{
 	 * @param constructor  The constructor that might throw an exception
 	 * @param errorMessage Message to report
 	 * @param logException Whether to include exception in report or not
-	 * @param <A>          Type of Among value parameter
-	 * @param <T>          Type of the resulting object
+	 * @param <IN>         Type of the parameter object
+	 * @param <OUT>        Type of the resulting object
 	 * @return Wrapped constructor
 	 * @throws NullPointerException If {@code constructor == null}
 	 * @see Constructor#tryConstruct(Constructor, ExceptionReporter)
 	 */
-	static <A extends Among, T> Constructor<A, T> tryConstruct(Constructor<? super A, T> constructor, String errorMessage, boolean logException){
-		return tryConstruct(constructor, (reportHandler, inst, e) -> reportHandler.report(ReportType.ERROR, errorMessage, inst.sourcePosition(), logException ? e : null));
+	static <IN, OUT> Constructor<IN, OUT> tryConstruct(Constructor<? super IN, OUT> constructor, String errorMessage, boolean logException){
+		return tryConstruct(constructor, (reportHandler, inst, e) ->
+				reportHandler.report(ReportType.ERROR, errorMessage, inst instanceof Among ? ((Among)inst).sourcePosition() : -1, logException ? e : null));
 	}
 	/**
 	 * Wraps given constructor inside try-catch block. Any RuntimeExceptions thrown will be caught and logged with
@@ -115,12 +131,12 @@ public interface Constructor<A extends Among, T>{
 	 *
 	 * @param constructor       The constructor that might throw an exception
 	 * @param exceptionReporter Optional exception reporter
-	 * @param <A>               Type of Among value parameter
-	 * @param <T>               Type of the resulting object
+	 * @param <IN>              Type of Among value parameter
+	 * @param <OUT>             Type of the resulting object
 	 * @return Wrapped constructor
 	 * @throws NullPointerException If {@code constructor == null}
 	 */
-	static <A extends Among, T> Constructor<A, T> tryConstruct(Constructor<? super A, T> constructor, @Nullable ExceptionReporter<? super A> exceptionReporter){
+	static <IN, OUT> Constructor<IN, OUT> tryConstruct(Constructor<? super IN, OUT> constructor, @Nullable ExceptionReporter<? super IN> exceptionReporter){
 		Objects.requireNonNull(constructor);
 		return (instance, reportHandler) -> {
 			try{
@@ -137,11 +153,11 @@ public interface Constructor<A extends Among, T>{
 	 * Create new constructor which produces list of given element. {@link AmongList} is expected for input.
 	 *
 	 * @param elementConstructor Constructor for elements
-	 * @param <T>                Type of the resulting object
+	 * @param <E>                Type of the elements
 	 * @return Constructor of list
 	 * @see Constructor#listOf(Constructor, boolean)
 	 */
-	static <T> Constructor<AmongList, List<T>> listOf(Constructor<Among, T> elementConstructor){
+	static <E> Constructor<AmongList, List<E>> listOf(Constructor<Among, E> elementConstructor){
 		return listOf(elementConstructor, false);
 	}
 	/**
@@ -149,11 +165,11 @@ public interface Constructor<A extends Among, T>{
 	 *
 	 * @param elementConstructor  Constructor for elements
 	 * @param requiresUnnamedList If {@code true}, matching list is required to be unnamed.
-	 * @param <T>                 Type of the resulting object
+	 * @param <E>                 Type of the elements
 	 * @return Constructor of list
 	 */
-	static <T> Constructor<AmongList, List<T>> listOf(
-			Constructor<Among, T> elementConstructor,
+	static <E> Constructor<AmongList, List<E>> listOf(
+			Constructor<Among, E> elementConstructor,
 			boolean requiresUnnamedList){
 		Objects.requireNonNull(elementConstructor);
 		return (instance, reportHandler) -> {
@@ -161,7 +177,7 @@ public interface Constructor<A extends Among, T>{
 				if(reportHandler!=null) reportHandler.reportError("List should be unnamed", instance.sourcePosition());
 				return null;
 			}
-			List<T> list = new ArrayList<>(instance.size());
+			List<E> list = new ArrayList<>(instance.size());
 			for(int i = 0; i<instance.size(); i++)
 				list.add(elementConstructor.construct(instance.get(i), reportHandler));
 			return list;
@@ -172,10 +188,10 @@ public interface Constructor<A extends Among, T>{
 	 * Generify given constructor. Simple type checking is inserted before calling the constructor.
 	 *
 	 * @param constructor Constructor to generify
-	 * @param <T>         Type of the resulting object
+	 * @param <OUT>       Type of the resulting object
 	 * @return Generified constructor
 	 */
-	static <T> Constructor<Among, T> generifyList(Constructor<AmongList, T> constructor){
+	static <OUT> Constructor<Among, OUT> generifyList(Constructor<AmongList, OUT> constructor){
 		return (instance, reportHandler) -> {
 			if(instance.isList()) return constructor.construct(instance.asList(), reportHandler);
 			if(reportHandler!=null) reportHandler.reportError("Expected list", instance.sourcePosition());
@@ -187,10 +203,10 @@ public interface Constructor<A extends Among, T>{
 	 * Generify given constructor. Simple type checking is inserted before calling the constructor.
 	 *
 	 * @param constructor Constructor to generify
-	 * @param <T>         Type of the resulting object
+	 * @param <OUT>       Type of the resulting object
 	 * @return Generified constructor
 	 */
-	static <T> Constructor<Among, T> generifyObject(Constructor<AmongObject, T> constructor){
+	static <OUT> Constructor<Among, OUT> generifyObject(Constructor<AmongObject, OUT> constructor){
 		return (instance, reportHandler) -> {
 			if(instance.isObj()) return constructor.construct(instance.asObj(), reportHandler);
 			if(reportHandler!=null) reportHandler.reportError("Expected object", instance.sourcePosition());
@@ -202,10 +218,10 @@ public interface Constructor<A extends Among, T>{
 	 * Generify given constructor. Simple type checking is inserted before calling the constructor.
 	 *
 	 * @param constructor Constructor to generify
-	 * @param <T>         Type of the resulting object
+	 * @param <OUT>       Type of the resulting object
 	 * @return Generified constructor
 	 */
-	static <T> Constructor<Among, T> generifyValue(Constructor<AmongPrimitive, T> constructor){
+	static <OUT> Constructor<Among, OUT> generifyValue(Constructor<AmongPrimitive, OUT> constructor){
 		return (instance, reportHandler) -> {
 			if(instance.isPrimitive()) return constructor.construct(instance.asPrimitive(), reportHandler);
 			if(reportHandler!=null) reportHandler.reportError("Expected value", instance.sourcePosition());
@@ -216,10 +232,10 @@ public interface Constructor<A extends Among, T>{
 	/**
 	 * Exception reporter for {@link Constructor#tryConstruct(Constructor, ExceptionReporter)}.
 	 *
-	 * @param <A> Type of Among value parameter
+	 * @param <IN> Type of the parameter object
 	 */
 	@FunctionalInterface
-	interface ExceptionReporter<A extends Among>{
-		void reportException(ReportHandler reportHandler, A instance, Throwable exception);
+	interface ExceptionReporter<IN>{
+		void reportException(ReportHandler reportHandler, IN instance, Throwable exception);
 	}
 }

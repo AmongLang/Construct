@@ -125,7 +125,7 @@ public final class ConditionedConstructor<A extends Among, T> implements Constru
 				stb.append("Matched by multiple conditions:");
 				for(int i : ambiguous)
 					stb.append("\n  ").append(conditions[i]);
-				reportHandler.reportError(stb.toString());
+				reportHandler.reportError(stb.toString(), instance.sourcePosition());
 			}
 			if(match>=0) return constructors[match].construct(instance, reportHandler);
 		}
@@ -134,7 +134,7 @@ public final class ConditionedConstructor<A extends Among, T> implements Constru
 			stb.append("None of the defined constructor rules match the parameter");
 			for(Condition<A> c : conditions)
 				stb.append("\n  ").append(c);
-			reportHandler.reportError(stb.toString());
+			reportHandler.reportError(stb.toString(), instance.sourcePosition());
 		}
 		return null;
 	}
