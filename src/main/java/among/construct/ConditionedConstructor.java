@@ -55,8 +55,9 @@ public final class ConditionedConstructor<A extends Among, T> implements Constru
 	/**
 	 * Make conditioned constructor for {@link AmongList}s. The constructor will have only one condition.
 	 *
-	 * @param consumer Builder consumer
-	 * @param <T>      Type of the resulting object
+	 * @param consumer    Builder consumer
+	 * @param constructor The constructor to be called after successful condition checking
+	 * @param <T>         Type of the resulting object
 	 * @return Newly created constructor instance
 	 */
 	public static <T> ConditionedConstructor<AmongList, T> listCondition(Consumer<ListConditionBuilder> consumer, Constructor<AmongList, T> constructor){
@@ -65,8 +66,9 @@ public final class ConditionedConstructor<A extends Among, T> implements Constru
 	/**
 	 * Make conditioned constructor for {@link AmongObject}s. The constructor will have only one condition.
 	 *
-	 * @param consumer Builder consumer
-	 * @param <T>      Type of the resulting object
+	 * @param consumer    Builder consumer
+	 * @param constructor The constructor to be called after successful condition checking
+	 * @param <T>         Type of the resulting object
 	 * @return Newly created constructor instance
 	 */
 	public static <T> ConditionedConstructor<AmongObject, T> objectCondition(Consumer<ObjectConditionBuilder> consumer, Constructor<AmongObject, T> constructor){
