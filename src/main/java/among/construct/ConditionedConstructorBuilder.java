@@ -2,11 +2,7 @@ package among.construct;
 
 import among.construct.condition.Condition;
 import among.construct.condition.ConditionBuilder;
-import among.construct.condition.ListConditionBuilder;
-import among.construct.condition.ObjectConditionBuilder;
 import among.obj.Among;
-import among.obj.AmongList;
-import among.obj.AmongObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,5 +47,4 @@ public abstract class ConditionedConstructorBuilder<
 	public ConditionedConstructor<A, T> build(){
 		return new ConditionedConstructor<>(conditions, constructors, firstMatch);
 	}
-
 }
