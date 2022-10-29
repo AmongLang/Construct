@@ -10,6 +10,7 @@ import among.obj.AmongPrimitive;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -178,9 +179,44 @@ public interface Constructor<IN, OUT>{
 				return null;
 			}
 			List<E> list = new ArrayList<>(instance.size());
-			for(int i = 0; i<instance.size(); i++)
-				list.add(elementConstructor.construct(instance.get(i), reportHandler));
+			for(int i = 0; i<instance.size(); i++){
+				E e = elementConstructor.construct(instance.get(i), reportHandler);
+				if(e==null) return null;
+				list.add(e);
+			}
 			return list;
+		};
+	}
+	/**
+	 * Create new constructor which produces list of given element.<br>
+	 * If an unnamed {@link AmongList} is provided as input, it will be read as list, with each element read with
+	 * {@code
+	 * elementConstructor}.<br>
+	 * If the list is named, or is not a list, then it will be read as element. The element read will be returned
+	 * wrapped inside singleton list.
+	 *
+	 * @param elementConstructor Constructor for elements
+	 * @param <E>                Type of the elements
+	 * @return Constructor of list
+	 * @see Constructor#listOf(Constructor, boolean)
+	 */
+	static <E> Constructor<Among, List<E>> listOrElementOf(Constructor<Among, E> elementConstructor){
+		Objects.requireNonNull(elementConstructor);
+		return (instance, reportHandler) -> {
+			if(instance.isList()){
+				AmongList l = instance.asList();
+				if(!l.hasName()){
+					List<E> list = new ArrayList<>(l.size());
+					for(int i = 0; i<l.size(); i++){
+						E e = elementConstructor.construct(l.get(i), reportHandler);
+						if(e==null) return null;
+						list.add(e);
+					}
+					return list;
+				}
+			}
+			E e = elementConstructor.construct(instance, reportHandler);
+			return e==null ? null : Collections.singletonList(e);
 		};
 	}
 
