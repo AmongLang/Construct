@@ -7,13 +7,21 @@ import among.obj.AmongObject;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.function.IntFunction;
 
 public final class ObjectCondition extends Condition<AmongObject>{
 	@Nullable private final Map<String, PropertyCheck> expectedPropertyToType;
 	private final byte allPropertyType;
 
-	public ObjectCondition(int minSize, int maxSize, @Nullable Map<String, PropertyCheck> expectedPropertyToType, byte allPropertyType){
-		super(minSize, maxSize);
+	public ObjectCondition(
+			int minSize,
+			int maxSize,
+			int warnMinSize,
+			int warnMaxSize,
+			@Nullable IntFunction<String> sizeWarningText,
+			@Nullable Map<String, PropertyCheck> expectedPropertyToType,
+			byte allPropertyType){
+		super(minSize, maxSize, warnMinSize, warnMaxSize, sizeWarningText);
 		this.expectedPropertyToType = expectedPropertyToType;
 		this.allPropertyType = allPropertyType;
 	}

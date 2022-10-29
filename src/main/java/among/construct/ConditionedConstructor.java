@@ -1,8 +1,7 @@
 package among.construct;
 
 import among.ReportHandler;
-import among.construct.ConditionedConstructorBuilder.ListConstructorBuilder;
-import among.construct.ConditionedConstructorBuilder.ObjectConstructorBuilder;
+import among.construct.ConditionedListConstructorBuilder.BinaryConstructor;
 import among.construct.condition.Condition;
 import among.construct.condition.ListConditionBuilder;
 import among.construct.condition.ObjectConditionBuilder;
@@ -20,9 +19,10 @@ import java.util.function.Consumer;
  * An implementation for {@link Constructor} to check for simple conditions of {@link AmongList} or {@link AmongObject}
  * before calling the actual constructor. Each constructor is paired with {@link Condition}, which checks given object
  * and reports error. This class can be used with only one condition, or multiple conditions.<br>
- * If multiple conditions were supplied, it expects only one of them to match at a time. If multiple conditions match
- * given parameter, it is reported as an error. This behavior can be changed with {@link
- * ConditionedConstructorBuilder#useFirstMatch()}, which makes the constructor to apply the first match found.
+ * If multiple conditions were supplied, it is expected that only one condition will be matched at a time; in other
+ * words, each condition is expected to be mutually exclusive. If multiple conditions qualify for given parameter, the
+ * first condition in declaration order is chosen. This behavior can be changed with {@link
+ * ConditionedConstructorBuilder#useOnlyMatch()}, which makes the constructor to report an error.
  *
  * @param <A> Type of Among value parameter
  * @param <T> Type of the resulting object
@@ -35,8 +35,8 @@ public final class ConditionedConstructor<A extends Among, T> implements Constru
 	 * @param <T>      Type of the resulting object
 	 * @return Newly created constructor instance
 	 */
-	public static <T> ConditionedConstructor<AmongList, T> listConditions(Consumer<ListConstructorBuilder<T>> consumer){
-		ListConstructorBuilder<T> b = new ListConstructorBuilder<>();
+	public static <T> ConditionedConstructor<AmongList, T> listConditions(Consumer<ConditionedListConstructorBuilder<T>> consumer){
+		ConditionedListConstructorBuilder<T> b = new ConditionedListConstructorBuilder<>();
 		consumer.accept(b);
 		return b.build();
 	}
@@ -47,8 +47,8 @@ public final class ConditionedConstructor<A extends Among, T> implements Constru
 	 * @param <T>      Type of the resulting object
 	 * @return Newly created constructor instance
 	 */
-	public static <T> ConditionedConstructor<AmongObject, T> objectConditions(Consumer<ObjectConstructorBuilder<T>> consumer){
-		ObjectConstructorBuilder<T> b = new ObjectConstructorBuilder<>();
+	public static <T> ConditionedConstructor<AmongObject, T> objectConditions(Consumer<ConditionedObjectConstructorBuilder<T>> consumer){
+		ConditionedObjectConstructorBuilder<T> b = new ConditionedObjectConstructorBuilder<>();
 		consumer.accept(b);
 		return b.build();
 	}
@@ -61,7 +61,7 @@ public final class ConditionedConstructor<A extends Among, T> implements Constru
 	 * @return Newly created constructor instance
 	 */
 	public static <T> ConditionedConstructor<AmongList, T> listCondition(Consumer<ListConditionBuilder> consumer, Constructor<AmongList, T> constructor){
-		return new ListConstructorBuilder<T>().add(consumer, constructor).build();
+		return new ConditionedListConstructorBuilder<T>().add(consumer, constructor).build();
 	}
 	/**
 	 * Make conditioned constructor for {@link AmongObject}s. The constructor will have only one condition.
@@ -72,7 +72,49 @@ public final class ConditionedConstructor<A extends Among, T> implements Constru
 	 * @return Newly created constructor instance
 	 */
 	public static <T> ConditionedConstructor<AmongObject, T> objectCondition(Consumer<ObjectConditionBuilder> consumer, Constructor<AmongObject, T> constructor){
-		return new ObjectConstructorBuilder<T>().add(consumer, constructor).build();
+		return new ConditionedObjectConstructorBuilder<T>().add(consumer, constructor).build();
+	}
+	/**
+	 * Make conditioned constructor for single-element {@link AmongList}s. The constructor will have only one condition.
+	 *
+	 * @param constructor The constructor to be called after successful condition checking
+	 * @param <T>         Type of the resulting object
+	 * @return Newly created constructor instance
+	 */
+	public static <T> ConditionedConstructor<AmongList, T> unaryCondition(Constructor<Among, T> constructor){
+		return new ConditionedListConstructorBuilder<T>().addUnary(c -> {}, constructor).build();
+	}
+	/**
+	 * Make conditioned constructor for single-element {@link AmongList}s. The constructor will have only one condition.
+	 *
+	 * @param consumer    Builder consumer
+	 * @param constructor The constructor to be called after successful condition checking
+	 * @param <T>         Type of the resulting object
+	 * @return Newly created constructor instance
+	 */
+	public static <T> ConditionedConstructor<AmongList, T> unaryCondition(Consumer<ListConditionBuilder> consumer, Constructor<Among, T> constructor){
+		return new ConditionedListConstructorBuilder<T>().addUnary(consumer, constructor).build();
+	}
+	/**
+	 * Make conditioned constructor for single-element {@link AmongList}s. The constructor will have only one condition.
+	 *
+	 * @param constructor The constructor to be called after successful condition checking
+	 * @param <T>         Type of the resulting object
+	 * @return Newly created constructor instance
+	 */
+	public static <T> ConditionedConstructor<AmongList, T> binaryCondition(BinaryConstructor<T> constructor){
+		return new ConditionedListConstructorBuilder<T>().addBinary(c -> {}, constructor).build();
+	}
+	/**
+	 * Make conditioned constructor for single-element {@link AmongList}s. The constructor will have only one condition.
+	 *
+	 * @param consumer    Builder consumer
+	 * @param constructor The constructor to be called after successful condition checking
+	 * @param <T>         Type of the resulting object
+	 * @return Newly created constructor instance
+	 */
+	public static <T> ConditionedConstructor<AmongList, T> binaryCondition(Consumer<ListConditionBuilder> consumer, BinaryConstructor<T> constructor){
+		return new ConditionedListConstructorBuilder<T>().addBinary(consumer, constructor).build();
 	}
 
 	private final Condition<A>[] conditions;

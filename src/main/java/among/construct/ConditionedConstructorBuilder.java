@@ -20,19 +20,20 @@ public abstract class ConditionedConstructorBuilder<
 		SELF extends ConditionedConstructorBuilder<A, CB, T, SELF>>{
 	private final List<Condition<A>> conditions = new ArrayList<>();
 	private final List<Constructor<A, T>> constructors = new ArrayList<>();
-	private boolean firstMatch;
-
-	private ConditionedConstructorBuilder(){}
+	private boolean firstMatch = true;
 
 	protected abstract SELF self();
 
+	protected SELF addConstructor(CB condition, Constructor<A, T> constructor){
+		conditions.add(condition.build());
+		constructors.add(Objects.requireNonNull(constructor));
+		return self();
+	}
+
 	public SELF add(Consumer<CB> consumer, Constructor<A, T> constructor){
-		Objects.requireNonNull(constructor);
 		CB b = createConditionBuilder();
 		consumer.accept(b);
-		conditions.add(b.build());
-		constructors.add(constructor);
-		return self();
+		return addConstructor(b, constructor);
 	}
 
 	public SELF useFirstMatch(){
@@ -51,21 +52,4 @@ public abstract class ConditionedConstructorBuilder<
 		return new ConditionedConstructor<>(conditions, constructors, firstMatch);
 	}
 
-	public static final class ListConstructorBuilder<T> extends ConditionedConstructorBuilder<AmongList, ListConditionBuilder, T, ListConstructorBuilder<T>>{
-		@Override protected ListConstructorBuilder<T> self(){
-			return this;
-		}
-		@Override protected ListConditionBuilder createConditionBuilder(){
-			return new ListConditionBuilder();
-		}
-	}
-
-	public static final class ObjectConstructorBuilder<T> extends ConditionedConstructorBuilder<AmongObject, ObjectConditionBuilder, T, ObjectConstructorBuilder<T>>{
-		@Override protected ObjectConstructorBuilder<T> self(){
-			return this;
-		}
-		@Override protected ObjectConditionBuilder createConditionBuilder(){
-			return new ObjectConditionBuilder();
-		}
-	}
 }

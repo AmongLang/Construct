@@ -6,13 +6,21 @@ import among.obj.AmongList;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.function.IntFunction;
 
 public final class ListCondition extends Condition<AmongList>{
 	@Nullable private final Map<Integer, Byte> elementIndexToType;
 	private final byte allElementType;
 
-	public ListCondition(int minSize, int maxSize, @Nullable Map<Integer, Byte> elementIndexToType, byte allElementType){
-		super(minSize, maxSize);
+	public ListCondition(
+			int minSize,
+			int maxSize,
+			int warnMinSize,
+			int warnMaxSize,
+			@Nullable IntFunction<String> sizeWarningText,
+			@Nullable Map<Integer, Byte> elementIndexToType,
+			byte allElementType){
+		super(minSize, maxSize, warnMinSize, warnMaxSize, sizeWarningText);
 		this.elementIndexToType = elementIndexToType;
 		this.allElementType = allElementType;
 	}

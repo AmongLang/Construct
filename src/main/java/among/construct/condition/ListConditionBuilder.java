@@ -48,6 +48,12 @@ public final class ListConditionBuilder extends ConditionBuilder<AmongList, List
 	}
 
 	@Override public ListCondition build(){
-		return new ListCondition(minSize, maxSize, elementIndexToType, allElementType);
+		return new ListCondition(minSize,
+				maxSize,
+				warnMinSize,
+				warnMaxSize,
+				sizeWarningText,
+				elementIndexToType,
+				allElementType);
 	}
 }

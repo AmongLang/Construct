@@ -65,6 +65,12 @@ public final class ObjectConditionBuilder extends ConditionBuilder<AmongObject, 
 	}
 
 	@Override public ObjectCondition build(){
-		return new ObjectCondition(minSize, maxSize, expectedProperties, allPropertyType);
+		return new ObjectCondition(minSize,
+				maxSize,
+				warnMinSize,
+				warnMaxSize ,
+				sizeWarningText,
+				expectedProperties,
+				allPropertyType);
 	}
 }
