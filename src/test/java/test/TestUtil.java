@@ -6,7 +6,7 @@ import among.RootAndDefinition;
 import among.Source;
 import among.construct.Constructor;
 import among.obj.Among;
-import among.report.ReportHandler;
+import among.report.ReportList;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -30,12 +30,25 @@ public class TestUtil{
 		return result.rootAndDefinition();
 	}
 
+	public static void expectError(Source src, Constructor<Among, ?> constructor){
+		RootAndDefinition rad = make(src);
+		ReportList reports = new ReportList.Mutable();
+		boolean error = false;
+		for(Among a : rad.root())
+			if(constructor.construct(a, reports)==null)
+				error = true;
+		reports.printReports(src);
+		if(!error) throw new RuntimeException("Expected construction error");
+	}
+
 	public static <T> T[] construct(Source src, Constructor<Among, ? extends T> constructor, IntFunction<T[]> arrayProvider){
 		RootAndDefinition rad = make(src);
-		ReportHandler reportHandler = ReportHandler.simple(src);
-		return rad.root().values().stream()
-				.map(a -> constructor.constructExpect(a, reportHandler))
+		ReportList reports = new ReportList.Mutable();
+		T[] arr = rad.root().values().stream()
+				.map(a -> constructor.constructExpect(a, reports))
 				.toArray(arrayProvider);
+		reports.printReports(src);
+		return arr;
 	}
 
 	public static Source expectSourceFrom(String folder, String fileName) throws IOException{

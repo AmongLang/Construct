@@ -1,4 +1,4 @@
-package test;
+package test.data;
 
 import among.TypeFlags;
 import among.construct.ConditionedConstructor;
@@ -8,15 +8,16 @@ import among.obj.Among;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
-public final class SampleData{
+public final class Person{
 	public final String name;
 	public final String description;
 	public final double height;
 	public final double weight;
 	public final List<String> notes;
 
-	public SampleData(String name, String description, double height, double weight, List<String> notes){
+	public Person(String name, String description, double height, double weight, List<String> notes){
 		this.name = name;
 		this.description = description;
 		this.height = height;
@@ -24,8 +25,22 @@ public final class SampleData{
 		this.notes = notes;
 	}
 
+	@Override public boolean equals(Object o){
+		if(this==o) return true;
+		if(o==null||getClass()!=o.getClass()) return false;
+		Person person = (Person)o;
+		return Double.compare(person.height, height)==0&&
+				Double.compare(person.weight, weight)==0&&
+				name.equals(person.name)&&
+				description.equals(person.description)&&
+				notes.equals(person.notes);
+	}
+	@Override public int hashCode(){
+		return Objects.hash(name, description, height, weight, notes);
+	}
+
 	@Override public String toString(){
-		return "SampleData{"+
+		return "Person{"+
 				"name='"+name+'\''+
 				", description='"+description+'\''+
 				", height="+height+
@@ -34,13 +49,14 @@ public final class SampleData{
 				'}';
 	}
 
-	public static final Constructor<Among, SampleData> RULE = Constructor.generifyObject(
+	public static final Constructor<Among, Person> CONSTRUCTOR = Constructor.generifyObject(
 			ConditionedConstructor.objectCondition(c -> c
 							.property("name", TypeFlags.PRIMITIVE)
 							.property("description", TypeFlags.PRIMITIVE)
 							.property("height", TypeFlags.PRIMITIVE)
 							.property("weight", TypeFlags.PRIMITIVE)
-							.optionalProperty("notes", TypeFlags.LIST),
+							.optionalProperty("notes", TypeFlags.LIST)
+							.warnOtherProperties(),
 					(instance, reportHandler) -> {
 						Double height = Constructors.DOUBLE.construct(instance.expectProperty("height"), reportHandler);
 						if(height==null) return null;
@@ -51,7 +67,7 @@ public final class SampleData{
 										.construct(instance.expectProperty("notes").asList(), reportHandler) :
 								Collections.emptyList();
 						if(notes==null) return null;
-						return new SampleData(
+						return new Person(
 								instance.expectProperty("name").asPrimitive().getValue(),
 								instance.expectProperty("description").asPrimitive().getValue(),
 								height, weight, notes);
