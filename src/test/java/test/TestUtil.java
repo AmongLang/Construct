@@ -4,12 +4,16 @@ import among.AmongEngine;
 import among.CompileResult;
 import among.RootAndDefinition;
 import among.Source;
+import among.construct.Constructor;
+import among.obj.Among;
+import among.report.ReportHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.function.IntFunction;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -24,6 +28,14 @@ public class TestUtil{
 		result.printReports();
 		result.expectSuccess();
 		return result.rootAndDefinition();
+	}
+
+	public static <T> T[] construct(Source src, Constructor<Among, ? extends T> constructor, IntFunction<T[]> arrayProvider){
+		RootAndDefinition rad = make(src);
+		ReportHandler reportHandler = ReportHandler.simple(src);
+		return rad.root().values().stream()
+				.map(a -> constructor.constructExpect(a, reportHandler))
+				.toArray(arrayProvider);
 	}
 
 	public static Source expectSourceFrom(String folder, String fileName) throws IOException{
