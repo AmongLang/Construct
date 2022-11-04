@@ -11,6 +11,9 @@ import java.util.function.IntFunction;
 public final class ListCondition extends Condition<AmongList>{
 	@Nullable private final Map<Integer, Byte> elementIndexToType;
 	private final byte allElementType;
+	private final int warnMinSize;
+	private final int warnMaxSize;
+	@Nullable private final IntFunction<String> sizeWarningText;
 
 	public ListCondition(
 			int minSize,
@@ -20,9 +23,12 @@ public final class ListCondition extends Condition<AmongList>{
 			@Nullable IntFunction<String> sizeWarningText,
 			@Nullable Map<Integer, Byte> elementIndexToType,
 			byte allElementType){
-		super(minSize, maxSize, warnMinSize, warnMaxSize, sizeWarningText);
+		super(minSize, maxSize);
 		this.elementIndexToType = elementIndexToType;
 		this.allElementType = allElementType;
+		this.warnMinSize = warnMinSize;
+		this.warnMaxSize = warnMaxSize;
+		this.sizeWarningText = sizeWarningText;
 	}
 
 	@Override public boolean test(AmongList list){
@@ -54,6 +60,16 @@ public final class ListCondition extends Condition<AmongList>{
 			}
 		}
 		return !invalid;
+	}
+
+	@Override protected boolean checkSize(AmongList instance, int size, @Nullable ReportHandler reportHandler){
+		boolean inRange = super.checkSize(instance, size, reportHandler);
+		if(reportHandler!=null&&inRange&&!isInRange(warnMinSize, warnMaxSize, size))
+			reportHandler.reportError(sizeWarningText!=null ?
+							sizeWarningText.apply(size) :
+							buildDefaultInvalidSizeMessage(warnMinSize, warnMaxSize, size),
+					instance.sourcePosition());
+		return inRange;
 	}
 
 	@Override public String toString(){

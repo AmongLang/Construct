@@ -4,22 +4,15 @@ import among.ReportHandler;
 import among.obj.Among;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.function.IntFunction;
 import java.util.function.Predicate;
 
 public abstract class Condition<A extends Among> implements Predicate<A>{
 	private final int minSize;
 	private final int maxSize;
-	private final int warnMinSize;
-	private final int warnMaxSize;
-	@Nullable private final IntFunction<String> sizeWarningText;
 
-	Condition(int minSize, int maxSize, int warnMinSize, int warnMaxSize, @Nullable IntFunction<String> sizeWarningText){
+	Condition(int minSize, int maxSize){
 		this.minSize = minSize;
 		this.maxSize = maxSize;
-		this.warnMinSize = warnMinSize;
-		this.warnMaxSize = warnMaxSize;
-		this.sizeWarningText = sizeWarningText;
 	}
 
 	public int minSize(){
@@ -33,16 +26,8 @@ public abstract class Condition<A extends Among> implements Predicate<A>{
 
 	protected boolean checkSize(A instance, int size, @Nullable ReportHandler reportHandler){
 		boolean inRange = isInRange(minSize, maxSize, size);
-		if(reportHandler!=null){
-			if(!inRange){
-				reportHandler.reportError(buildDefaultInvalidSizeMessage(minSize, maxSize, size), instance.sourcePosition());
-			}else if(!isInRange(warnMinSize, warnMaxSize, size)){
-				reportHandler.reportError(sizeWarningText!=null ?
-								sizeWarningText.apply(size) :
-								buildDefaultInvalidSizeMessage(warnMinSize, warnMaxSize, size),
-						instance.sourcePosition());
-			}
-		}
+		if(reportHandler!=null&&!inRange)
+			reportHandler.reportError(buildDefaultInvalidSizeMessage(minSize, maxSize, size), instance.sourcePosition());
 		return inRange;
 	}
 
@@ -50,7 +35,7 @@ public abstract class Condition<A extends Among> implements Predicate<A>{
 		return (min<0||value>=min)&&(max<0||value<=max);
 	}
 
-	private static String buildDefaultInvalidSizeMessage(int min, int max, int value){
+	protected static String buildDefaultInvalidSizeMessage(int min, int max, int value){
 		StringBuilder stb = new StringBuilder();
 		stb.append("Invalid size: ");
 		if(min==max) stb.append("expected ").append(min);

@@ -6,10 +6,14 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public final class ObjectConditionBuilder extends ConditionBuilder<AmongObject, ObjectCondition, ObjectConditionBuilder>{
 	@Nullable private Map<String, ObjectCondition.PropertyCheck> expectedProperties;
 	private byte allPropertyType = TypeFlags.ANY;
+
+	private boolean warnOtherProperties;
+	@Nullable private Function<String[], String> propertiesToWarningText;
 
 	@Override protected ObjectConditionBuilder self(){
 		return this;
@@ -58,6 +62,15 @@ public final class ObjectConditionBuilder extends ConditionBuilder<AmongObject, 
 		return this;
 	}
 
+	public ObjectConditionBuilder warnOtherProperties(){
+		return warnOtherProperties(null);
+	}
+	public ObjectConditionBuilder warnOtherProperties(@Nullable Function<String[], String> propertiesToWarningText){
+		this.warnOtherProperties = true;
+		this.propertiesToWarningText = propertiesToWarningText;
+		return this;
+	}
+
 	@Override protected void validate(){
 		super.validate();
 		if(maxSize>=0&&expectedProperties!=null&&maxSize<expectedProperties.size())
@@ -67,10 +80,9 @@ public final class ObjectConditionBuilder extends ConditionBuilder<AmongObject, 
 	@Override public ObjectCondition build(){
 		return new ObjectCondition(minSize,
 				maxSize,
-				warnMinSize,
-				warnMaxSize ,
-				sizeWarningText,
 				expectedProperties,
-				allPropertyType);
+				allPropertyType,
+				warnOtherProperties,
+				propertiesToWarningText);
 	}
 }

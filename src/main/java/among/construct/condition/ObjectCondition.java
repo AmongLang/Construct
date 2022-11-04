@@ -6,24 +6,29 @@ import among.obj.Among;
 import among.obj.AmongObject;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.function.IntFunction;
+import java.util.function.Function;
 
 public final class ObjectCondition extends Condition<AmongObject>{
 	@Nullable private final Map<String, PropertyCheck> expectedPropertyToType;
 	private final byte allPropertyType;
+	private final boolean warnOtherProperties;
+	@Nullable private final Function<String[], String> propertiesToWarningText;
 
 	public ObjectCondition(
 			int minSize,
 			int maxSize,
-			int warnMinSize,
-			int warnMaxSize,
-			@Nullable IntFunction<String> sizeWarningText,
 			@Nullable Map<String, PropertyCheck> expectedPropertyToType,
-			byte allPropertyType){
-		super(minSize, maxSize, warnMinSize, warnMaxSize, sizeWarningText);
+			byte allPropertyType,
+			boolean warnOtherProperties,
+			@Nullable Function<String[], String> propertiesToWarningText){
+		super(minSize, maxSize);
 		this.expectedPropertyToType = expectedPropertyToType;
 		this.allPropertyType = allPropertyType;
+		this.warnOtherProperties = warnOtherProperties;
+		this.propertiesToWarningText = propertiesToWarningText;
 	}
 
 	@Override public boolean test(AmongObject obj){
@@ -64,14 +69,27 @@ public final class ObjectCondition extends Condition<AmongObject>{
 				}
 			}
 		}
+		List<String> redundantProperties = null;
 		for(Map.Entry<String, Among> e : obj.properties().entrySet()){
-			if((expectedPropertyToType==null||!expectedPropertyToType.containsKey(e.getKey()))&&
-					allPropertyType!=TypeFlags.ANY&&
-					!TypeFlags.matches(allPropertyType, e.getValue())){
-				reportHandler.reportError("Expected "+TypeFlags.toString(allPropertyType)+" for property '"+e.getKey()+
-								"', provided "+TypeFlags.from(e.getValue()),
-						e.getValue().sourcePosition());
-				invalid = true;
+			if(expectedPropertyToType==null||!expectedPropertyToType.containsKey(e.getKey())){
+				if(allPropertyType!=TypeFlags.ANY&&!TypeFlags.matches(allPropertyType, e.getValue())){
+					reportHandler.reportError("Expected "+TypeFlags.toString(allPropertyType)+
+									" for property '"+e.getKey()+"', provided "+TypeFlags.from(e.getValue()),
+							e.getValue().sourcePosition());
+					invalid = true;
+				}else if(warnOtherProperties){
+					if(redundantProperties==null) redundantProperties = new ArrayList<>();
+					redundantProperties.add(e.getKey());
+				}
+			}
+		}
+		if(redundantProperties!=null){
+			if(propertiesToWarningText!=null){
+				reportHandler.reportWarning(propertiesToWarningText.apply(redundantProperties.toArray(new String[0])));
+			}else{
+				StringBuilder stb = new StringBuilder().append(redundantProperties.size()).append(" redundant properties");
+				for(String s : redundantProperties) stb.append("\n  ").append(s);
+				reportHandler.reportWarning(stb.toString());
 			}
 		}
 		return !invalid;
