@@ -85,7 +85,7 @@ public final class ListConditionBuilder extends ConditionBuilder<AmongList, List
 		super.validate();
 		if(elementIndexToType!=null)
 			for(int i : elementIndexToType.keySet())
-				if(!Condition.isInRange(minSize, maxSize, i))
+				if(maxSize>=0&&maxSize<=i)
 					throw new IllegalStateException("Type checking element at index out of range "+i);
 	}
 
