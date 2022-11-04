@@ -1,12 +1,12 @@
 package among.construct;
 
-import among.ReportHandler;
-import among.ReportType;
 import among.exception.Sussy;
 import among.obj.Among;
 import among.obj.AmongList;
 import among.obj.AmongObject;
 import among.obj.AmongPrimitive;
+import among.report.ReportHandler;
+import among.report.ReportType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;

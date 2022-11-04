@@ -1,8 +1,8 @@
 package among.construct.condition;
 
-import among.ReportHandler;
 import among.TypeFlags;
 import among.obj.AmongList;
+import among.report.ReportHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;

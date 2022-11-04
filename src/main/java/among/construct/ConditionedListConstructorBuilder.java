@@ -1,9 +1,9 @@
 package among.construct;
 
-import among.ReportHandler;
 import among.construct.condition.ListConditionBuilder;
 import among.obj.Among;
 import among.obj.AmongList;
+import among.report.ReportHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;

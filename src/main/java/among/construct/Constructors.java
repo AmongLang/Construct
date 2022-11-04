@@ -1,8 +1,8 @@
 package among.construct;
 
-import among.ReportHandler;
 import among.obj.Among;
 import among.obj.AmongPrimitive;
+import among.report.ReportHandler;
 import org.jetbrains.annotations.Nullable;
 
 import static among.construct.ConditionedConstructor.*;

@@ -1,7 +1,7 @@
 package among.construct.condition;
 
-import among.ReportHandler;
 import among.obj.Among;
+import among.report.ReportHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Predicate;
