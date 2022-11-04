@@ -97,16 +97,7 @@ public final class ObjectCondition extends Condition<AmongObject>{
 
 	@Override public String toString(){
 		StringBuilder stb = new StringBuilder().append("Object: {");
-		boolean first = true;
-		if(minSize()>=0){
-			first = false;
-			stb.append("Min Size: ").append(minSize());
-		}
-		if(maxSize()>=0){
-			if(first) first = false;
-			else stb.append(", ");
-			stb.append("Max Size: ").append(maxSize());
-		}
+		boolean first = appendSizeString(stb);
 		if(expectedPropertyToType!=null){
 			if(first) first = false;
 			else stb.append(", ");

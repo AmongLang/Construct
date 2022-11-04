@@ -126,24 +126,17 @@ public final class ConditionedConstructor<A extends Among, T> implements Constru
 		this.constructors = constructors.toArray(new Constructor[0]);
 		if(this.conditions.length!=this.constructors.length)
 			throw new IllegalArgumentException("conditions.size() != constructors.size()");
+		if(this.conditions.length==0)
+			throw new IllegalArgumentException("No conditions");
 		for(Condition<A> c : this.conditions) Objects.requireNonNull(c);
 		for(Constructor<A, T> c : this.constructors) Objects.requireNonNull(c);
 		this.firstMatch = firstMatch;
 	}
 
 	@Override @Nullable public T construct(A instance, @Nullable ReportHandler reportHandler){
-		switch(conditions.length){
-			case 0:
-				if(reportHandler!=null)
-					reportHandler.reportError(
-							"Invalid conditioned constructor: no rules specified.",
-							instance.sourcePosition());
-				return null;
-			case 1:
-				return conditions[0].test(instance, reportHandler) ?
-						constructors[0].construct(instance, reportHandler) :
-						null;
-		}
+		if(conditions.length==1) return conditions[0].test(instance, reportHandler) ?
+				constructors[0].construct(instance, reportHandler) :
+				null;
 		if(firstMatch){
 			for(int i = 0; i<conditions.length; i++)
 				if(conditions[i].test(instance))

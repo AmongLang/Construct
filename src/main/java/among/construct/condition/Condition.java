@@ -44,4 +44,13 @@ public abstract class Condition<A extends Among> implements Predicate<A>{
 		else stb.append("maximum ").append(min).append(" expected");
 		return stb.append(", provided ").append(value).toString();
 	}
+
+	protected boolean appendSizeString(StringBuilder stb){
+		if(minSize<0&&maxSize<0) return false;
+		if(minSize==maxSize) stb.append("Size: ").append(minSize);
+		else if(minSize<0) stb.append("Max Size: ").append(maxSize);
+		else if(maxSize<0) stb.append("Min Size: ").append(minSize);
+		else stb.append("Size: ").append(minSize).append("~").append(maxSize);
+		return true;
+	}
 }

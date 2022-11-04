@@ -45,6 +45,7 @@ public abstract class ConditionedConstructorBuilder<
 	protected abstract CB createConditionBuilder();
 
 	public ConditionedConstructor<A, T> build(){
+		if(conditions.isEmpty()) throw new IllegalStateException("No conditions");
 		return new ConditionedConstructor<>(conditions, constructors, firstMatch);
 	}
 }
