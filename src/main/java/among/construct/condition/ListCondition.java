@@ -65,7 +65,7 @@ public final class ListCondition extends Condition<AmongList>{
 	@Override protected boolean checkSize(AmongList instance, int size, @Nullable ReportHandler reportHandler){
 		boolean inRange = super.checkSize(instance, size, reportHandler);
 		if(reportHandler!=null&&inRange&&!isInRange(warnMinSize, warnMaxSize, size))
-			reportHandler.reportError(sizeWarningText!=null ?
+			reportHandler.reportWarning(sizeWarningText!=null ?
 							sizeWarningText.apply(size) :
 							buildDefaultInvalidSizeMessage(warnMinSize, warnMaxSize, size),
 					instance.sourcePosition());
