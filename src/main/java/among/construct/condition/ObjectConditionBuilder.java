@@ -77,7 +77,7 @@ public final class ObjectConditionBuilder extends ConditionBuilder<AmongObject, 
 			throw new IllegalStateException("Expecting more property than maximum size defined");
 	}
 
-	@Override public ObjectCondition build(){
+	@Override protected ObjectCondition make(){
 		return new ObjectCondition(minSize,
 				maxSize,
 				expectedProperties,

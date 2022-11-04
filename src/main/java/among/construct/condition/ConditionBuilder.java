@@ -36,5 +36,9 @@ public abstract class ConditionBuilder<A extends Among, C extends Condition<A>, 
 		if(minSize>=0&&maxSize>=0&&minSize>maxSize) throw new IllegalStateException("minSize > maxSize");
 	}
 
-	public abstract C build();
+	public final C build(){
+		validate();
+		return make();
+	}
+	protected abstract C make();
 }

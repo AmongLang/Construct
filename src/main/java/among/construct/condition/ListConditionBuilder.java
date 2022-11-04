@@ -89,7 +89,7 @@ public final class ListConditionBuilder extends ConditionBuilder<AmongList, List
 					throw new IllegalStateException("Type checking element at index out of range "+i);
 	}
 
-	@Override public ListCondition build(){
+	@Override protected ListCondition make(){
 		return new ListCondition(minSize,
 				maxSize,
 				warnMinSize,
