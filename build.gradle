@@ -9,15 +9,10 @@ version "${spec_version}.${patch_version}"
 
 repositories {
     mavenCentral()
-    maven {
-        url = 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
-    }
 }
 
 dependencies {
-    api('io.github.amonglang:among:0.6.0-SNAPSHOT'){
-        changing = true
-    }
+    api 'io.github.amonglang:among:0.6.0'
 
     compileOnly 'org.jetbrains:annotations:23.0.0'
 
